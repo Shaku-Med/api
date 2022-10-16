@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+        />
+        <meta property="og:url" content="/" />
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content="Free Chatting" />
+        <meta
+            property="og:description"
+            content="Has it taken a while since you last communicated with friends? then hopin and chat with friends for free."
+        />
+        <meta
+            property="og:image"
+            content="https://www.freepnglogos.com/uploads/eagle-png-logo/lakes-eagles-png-logo-14.png"
+        />
+        <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+            crossorigin="anonymous"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+            integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <title id="titles"></title>
+    </head>
+    <style>
+        body {
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                Helvetica, Arial, sans-serif;
+            height: 100vh;
+            padding: 0;
+        }
+
+        .ppad {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 1000000000;
+            left: 0;
+        }
+
+        #form {
+            background: #00000026;
+            padding: 0.25rem;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+            width: 100%;
+        }
+        #input {
+            border: none;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin: 0.25rem;
+        }
+        #input:focus {
+            outline: none;
+        }
+        #form > button {
+            background: #333;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        .form_c {
+            display: flex;
+            align-items: flex-start;
+            justify-content: start;
+            gap: 10px;
+            height: 100vh;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        .user_info {
+            width: 100%;
+            max-width: 400px;
+            flex: 1 1 25rem;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: start;
+            gap: 10px;
+            flex-direction: column;
+            -ms-flex-direction: column;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .user_info img {
+            width: 10rem;
+            height: 10rem;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: 0 0;
+        }
+
+        .form_gain {
+            width: 100%;
+            flex: 1 1 30rem;
+            position: relative;
+            height: 100vh;
+            background: white;
+            overflow: auto;
+            overflow-x: hidden;
+        }
+
+        .change_pp {
+            position: relative;
+            margin-top: 50px;
+        }
+
+        .change_pp label {
+            font-size: 30px;
+            position: absolute;
+            top: 10px;
+            right: -10px;
+            height: 5rem;
+            width: 5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 50%;
+            border: 1px solid #eaeae9;
+            cursor: pointer;
+            z-index: 20000;
+        }
+
+        .name_part {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .name_part h3 {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .fonline {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .fonline img {
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        ._info_friends {
+            width: 100%;
+        }
+
+        .img_parts {
+            width: 100%;
+            background: #000000;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        .name_p {
+            margin-top: 10px;
+        }
+
+        .times_close {
+            display: none;
+        }
+
+        .user_info {
+            position: sticky;
+            top: 0;
+            z-index: 500000000;
+            background: white;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-user-drag: none;
+            padding: 20px;
+            border-right: 1px solid #eaeae9;
+        }
+
+        .edit_file {
+            position: absolute;
+            top: 0;
+            font-size: 20px;
+            align-items: center;
+            display: flex;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            background: #0000006d;
+            border-radius: 50%;
+            color: white;
+            visibility: hidden;
+            transition: all 0.4s ease-in-out;
+            opacity: 0;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        .edit_file.animay {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .messages {
+            display: flex;
+            align-items: center;
+            justify-content: end;
+            padding: 10px;
+            overflow-wrap: break-word;
+        }
+
+        .new_messages {
+            width: fit-content;
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .top_msgs img {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: 0 0;
+            border: 4px solid #cacaca;
+        }
+
+        .you_mes {
+            background: #8b2727;
+            margin-top: 10px;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0px 0px 5px #00000067;
+        }
+
+        .messages2 {
+            display: flex;
+            align-items: center;
+            justify-content: start;
+            padding: 10px;
+            overflow-wrap: break-word;
+        }
+
+        .you_mes1 {
+            background: #275e8b;
+            margin-top: 10px;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0px 0px 5px #00000067;
+        }
+
+        .close_open_me {
+            font-size: 30px;
+            color: white;
+            font-weight: bold;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #000;
+            padding: 10px;
+            height: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .top_msgs {
+            display: flex;
+            font-size: 16px;
+            font-weight: bold;
+            gap: 10px;
+            align-items: center;
+            justify-content: start;
+            color: black;
+        }
+
+        .chat_alert_mes {
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-direction: column;
+            padding: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .chat_alert_mes img {
+            width: 100%;
+        }
+
+        @media screen and (max-width: 800px) {
+            .user_info {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                max-width: 100%;
+                height: 100%;
+                background: white;
+                padding: 10px;
+                z-index: 20000000000000;
+                transition: all 0.5s ease-in-out;
+            }
+
+            .user_info.infos {
+                left: 0;
+            }
+            .form_c {
+                height: 100%;
+            }
+
+            .name_part {
+                width: 100%;
+                max-width: 400px;
+            }
+
+            .times_close {
+                display: block;
+                position: absolute;
+                top: 20px;
+                right: 30px;
+                font-size: 40px;
+                cursor: pointer;
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            .name_part {
+                width: 100%;
+                max-width: 300px;
+            }
+            .new_messages {
+                max-width: 80%;
+            }
+        }
+    </style>
+    <body>
+        <div class="form_c">
+            <div class="user_info">
+                <div
+                    onclick=" let user_info = document.querySelector('.user_info'); user_info.classList.remove('infos')"
+                    class="times_close"
+                >
+                    <i class="fa fa-times"></i>
+                </div>
+                <div class="user_main">
+                    <div class="change_pp">
+                        <img id="image_change" alt="" />
+                        <form action="">
+                            <input
+                                accept="image/*"
+                                type="file"
+                                style="display: none"
+                                name=""
+                                id="profilepic"
+                            />
+                        </form>
+                        <label for="profilepic">
+                            <i class="fa fa-camera"></i>
+                        </label>
+                        <div class="edit_file">
+                            <i class="spinner-border"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="name_part">
+                    <h3
+                        id="namme"
+                        class="text-dark text-center font-weight-bold"
+                    ></h3>
+                </div>
+                <div class="_info_friends">
+                    <div class="p text-center text-capitalize">
+                        People online
+                    </div>
+                    <div class="fonline"></div>
+                </div>
+            </div>
+            <div class="form_gain">
+                <div class="chat_box">
+                    <div class="chat_alert_mes">
+                        <div class="imgCont">
+                            <img
+                                src="https://www.freeiconspng.com/uploads/inbox-empty-image-icon-26.png"
+                                alt=""
+                            />
+                            <div class="text_w">
+                                <h3>
+                                    No Message has been sent to this group yet.
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hid" style="height: 5vh"></div>
+                <div class="ppad">
+                    <form id="form" action="">
+                        <input id="input" spellcheck="true" autocomplete="on" />
+                        <button>Send</button>
+                    </form>
+                </div>
+                <div
+                    onclick=" let user_info = document.querySelector('.user_info'); user_info.classList.add('infos')"
+                    class="close_open_me"
+                >
+                    <i class="fa fa-bars"></i>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function chatiddata(name) {
+                const value = `; ${document.cookie}`
+                const parts = value.split(`; ${name}=`)
+                if (parts.length === 2) return parts.pop().split(';').shift()
+            }
+
+            function chatid_main_chat() {
+                return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(
+                    /[018]/g,
+                    (c) =>
+                        (
+                            c ^
+                            (crypto.getRandomValues(new Uint8Array(1))[0] &
+                                (15 >> (c / 4)))
+                        ).toString(16)
+                )
+            }
+
+            if (localStorage.getItem('profilepic')) {
+                if (localStorage.getItem('profilepic') !== null) {
+                    let myforms = document.getElementById('form')
+                    let input = document.getElementById('input')
+                    myforms.addEventListener('submit', (e) => {
+                        e.preventDefault()
+                        if (input.value !== '') {
+                            let messagedata = {
+                                message: input.value,
+                                uid: chatiddata('user_c'),
+                                messageid: chatid_main_chat(),
+                                uname: chatiddata('sessionname'),
+                                profilepic: localStorage.getItem('profilepic'),
+                            }
+                            socket.emit('chat_messages', messagedata)
+                        }
+                    })
+                }
+            }
+        </script>
+
+        <script>
+            function onlinedata(name) {
+                const value = `; ${document.cookie}`
+                const parts = value.split(`; ${name}=`)
+                if (parts.length === 2) return parts.pop().split(';').shift()
+            }
+            const socket = io()
+            socket.emit('online_status', onlinedata('user_c'))
+
+            let fonline = document.querySelector('.fonline')
+
+            let inpuu = document.getElementById('input')
+
+            socket.on('newuser', (data) => {
+                if (data.unic_id !== onlinedata('user_c')) {
+                    let htmls = `<div id=${data.unic_id} class="img_parts">
+                                <img
+                                    src=${data.profilepic}
+                                />
+                                <div class="name_p">${data.names}</div>
+                            </div>`
+                    fonline.innerHTML += htmls
+                }
+            })
+
+            function my_ppup_data(name) {
+                const value = `; ${document.cookie}`
+                const parts = value.split(`; ${name}=`)
+                if (parts.length === 2) return parts.pop().split(';').shift()
+            }
+            $.ajax({
+                method: 'POST',
+                url: 'https://chatapp.labalu.repl.co/grab_info/session',
+                data: {
+                    ide: my_ppup_data('user_c'),
+                },
+                success: (data) => {
+                    let image_change = document.querySelector('#image_change')
+                    let namme = document.querySelector('#namme')
+                    image_change.src = data.profilepic
+                    namme.innerHTML = data.names
+                    localStorage.setItem('profilepic', data.profilepic)
+                },
+            })
+
+            let chat_box = document.querySelector('.chat_box')
+            let form_gain = document.querySelector('.form_gain')
+            socket.on('grabmess', (data) => {
+                if (data.message) {
+                    //Html
+
+                    if (data.uid === my_ppup_data('user_c')) {
+                        inpuu.value = ''
+                        let httpm = ` <div id=${data.messageid} onclick='delmes(this, "${data.messageid}")' class="messages">
+                                    <div class="new_messages">
+                                        <div class="top_msgs">
+                                            <img
+                                                src=${data.profilepic}
+                                                alt=""
+                                            />
+                                            <div class="names_m">Me</div>
+                                        </div>
+                                        <div style="cursor: pointer" class="you_mes">
+                                         ${data.message}
+                                        </div>
+                                    </div>
+                                </div>`
+                        chat_box.innerHTML += httpm
+                        form_gain.scrollTop = form_gain.scrollHeight
+
+                        let chat_alert_mes =
+                            document.querySelector('.chat_alert_mes')
+                        if (chat_alert_mes.style.display !== 'none') {
+                            chat_alert_mes.style.display = 'none'
+                        }
+                    } else {
+                        let httpm = `  <div id=${data.messageid} class="messages2">
+                                    <div class="new_messages">
+                                        <div class="top_msgs">
+                                            <img
+                                                src=${data.profilepic}
+                                                alt=""
+                                            />
+                                            <div class="names_m">${data.uname}</div>
+                                        </div>
+                                        <div class="you_mes1">
+                                         ${data.message}
+                                        </div>
+                                    </div>
+                                </div>`
+                        chat_box.innerHTML += httpm
+                        form_gain.scrollTop = form_gain.scrollHeight
+
+                        let chat_alert_mes =
+                            document.querySelector('.chat_alert_mes')
+                        if (chat_alert_mes.style.display !== 'none') {
+                            chat_alert_mes.style.display = 'none'
+                        }
+                    }
+                }
+            })
+
+            if (chat_box.innerHTML === '') {
+                console.log('Hi')
+            }
+
+            //Fetching all chat datas... now comming ////
+
+            $.ajax({
+                method: 'POST',
+                url: 'https://chatapp.labalu.repl.co/fetch_chat_data/Now',
+                success: function (data) {
+                    if (data !== 'nope') {
+                        if (data.length > 0) {
+                            data.map((vals) => {
+                                if (vals.ide === my_ppup_data('user_c')) {
+                                    inpuu.value = ''
+                                    let httpm = ` <div id=${vals.msgid} onclick='delmes(this, "${vals.msgid}")' class="messages">
+                                        <div class="new_messages">
+                                            <div class="top_msgs">
+                                                <img
+                                                    src=${vals.messagetype}
+                                                    alt=""
+                                                />
+                                                <div class="names_m">Me</div>
+                                            </div>
+                                            <div style="cursor: pointer" class="you_mes">
+                                             ${vals.message}
+                                            </div>
+                                        </div>
+                                    </div>`
+                                    chat_box.innerHTML += httpm
+                                    form_gain.scrollTop = form_gain.scrollHeight
+                                } else {
+                                    let httpm = `  <div id=${vals.msgid} class="messages2">
+                                        <div class="new_messages">
+                                            <div class="top_msgs">
+                                                <img
+                                                    src=${vals.messagetype}
+                                                    alt=""
+                                                />
+                                                <div class="names_m">${vals.names}</div>
+                                            </div>
+                                            <div class="you_mes1">
+                                             ${vals.message}
+                                            </div>
+                                        </div>
+                                    </div>`
+                                    chat_box.innerHTML += httpm
+                                    form_gain.scrollTop = form_gain.scrollHeight
+                                }
+                            })
+                        }
+                    } else {
+                        let chat_alert_mes =
+                            document.querySelector('.chat_alert_mes')
+                        chat_alert_mes.style.display = 'flex'
+                    }
+                },
+            })
+
+            let myinippu = document.getElementById('input')
+            myinippu.addEventListener('keyup', (e) => {
+                if (myinippu.value !== '') {
+                    let dataasm = {
+                        ides: my_ppup_data('user_c'),
+                        names: my_ppup_data('sessionname'),
+                    }
+                    socket.emit('typing', dataasm)
+                } else {
+                    socket.emit('donetyping', 'done')
+                }
+            })
+
+            socket.on('type', (data) => {
+                if (data.ides !== my_ppup_data('user_c')) {
+                    myinippu.setAttribute(
+                        'placeholder',
+                        `${data.names + ' is typing...'}`
+                    )
+                }
+            })
+
+            socket.on('donetypings', (data) => {
+                if (data === 'done') {
+                    myinippu.removeAttribute('placeholder')
+                }
+            })
+
+            function delmes(data1, data2) {
+                if (
+                    window.confirm('Do you wish to delete this message?') ===
+                    true
+                ) {
+                    socket.emit('delete_msg', data2)
+                } else {
+                }
+            }
+            socket.on('dele', (data) => {
+                let ide = document.getElementById(data)
+                ide.style.display = 'none'
+            })
+        </script>
+
+        <script>
+            function cookie_id_main_main(name) {
+                const value = `; ${document.cookie}`
+                const parts = value.split(`; ${name}=`)
+                if (parts.length === 2) return parts.pop().split(';').shift()
+            }
+
+            function myvv() {
+                return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(
+                    /[018]/g,
+                    (c) =>
+                        (
+                            c ^
+                            (crypto.getRandomValues(new Uint8Array(1))[0] &
+                                (15 >> (c / 4)))
+                        ).toString(16)
+                )
+            }
+
+            let profilepic = document.querySelector('#profilepic')
+            let image_change = document.querySelector('#image_change')
+            let edit_file = document.querySelector('.edit_file')
+            profilepic.addEventListener('change', async (e) => {
+                image_change.src = URL.createObjectURL(e.target.files[0])
+                edit_file.classList.add('animay')
+
+                let formdata = new FormData()
+                formdata.append('unic_id', cookie_id_main_main('user_c'))
+                formdata.append('picture', e.target.files[0])
+                formdata.append('random_code', myvv())
+                formdata.append('form', 1)
+
+                var xhr = new XMLHttpRequest()
+                xhr.open(
+                    'POST',
+                    'https://profilepic.labalu.repl.co/Image/upload.php',
+                    true
+                )
+                xhr.onload = (edata) => {
+                    let jsonenco = JSON.parse(edata.currentTarget.response)
+                    if (jsonenco === 'success') {
+                        edit_file.classList.remove('animay')
+                        alert('Your profile picture has been updated.')
+                    } else {
+                        image_change.src =
+                            'https://i.pinimg.com/736x/1b/cf/fa/1bcffa0135c633178f485413a6b69c34.jpg'
+                    }
+                }
+                xhr.send(formdata)
+            })
+        </script>
+
+        <script>
+            function grabmyname(name) {
+                const value = `; ${document.cookie}`
+                const parts = value.split(`; ${name}=`)
+                if (parts.length === 2) return parts.pop().split(';').shift()
+            }
+
+            let titles = document.getElementById('titles')
+            titles.innerHTML = `Group Chat | ${grabmyname('sessionname')}`
+        </script>
+
+        <!-- This is the part ^ for chatting. -->
+
+        <!-- This is the part for authentication... -->
+        <script>
+            setInterval(() => {
+                function getCookie(name) {
+                    const value = `; ${document.cookie}`
+                    const parts = value.split(`; ${name}=`)
+                    if (parts.length === 2)
+                        return parts.pop().split(';').shift()
+                }
+                if (!getCookie('user_c')) {
+                    //Clear cookies...
+                    document.cookie = `user_c=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    document.cookie = `sessionname=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    localStorage.removeItem('sessionid')
+                    //end of clear cookies..
+
+                    window.open('../Signup/Login', '_self')
+                } else if (getCookie('user_c') === null) {
+                    //Clear cookies...
+                    document.cookie = `user_c=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    document.cookie = `sessionname=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    localStorage.removeItem('sessionid')
+                    //end of clear cookies..
+
+                    window.open('../Signup/Login', '_self')
+                } else if (!getCookie('sessionname')) {
+                    //Clear cookies...
+                    document.cookie = `user_c=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    document.cookie = `sessionname=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    localStorage.removeItem('sessionid')
+                    //end of clear cookies..
+
+                    window.open('../Signup/Login', '_self')
+                } else if (getCookie('sessionname') === null) {
+                    //Clear cookies...
+                    document.cookie = `user_c=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    document.cookie = `sessionname=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    localStorage.removeItem('sessionid')
+                    //end of clear cookies..
+
+                    window.open('../Signup/Login', '_self')
+                } else if (!localStorage.getItem('sessionid')) {
+                    //Clear cookies...
+                    document.cookie = `user_c=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    document.cookie = `sessionname=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    localStorage.removeItem('sessionid')
+                    //end of clear cookies..
+
+                    window.open('../Signup/Login', '_self')
+                } else if (localStorage.getItem('sessionid') === null) {
+                    //Clear cookies...
+                    document.cookie = `user_c=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    document.cookie = `sessionname=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    localStorage.removeItem('sessionid')
+                    //end of clear cookies..
+
+                    window.open('../Signup/Login', '_self')
+                } else if (
+                    localStorage.getItem('sessionid') !== getCookie('user_c') ||
+                    getCookie('user_c') !== localStorage.getItem('sessionid')
+                ) {
+                    //Clear cookies...
+                    document.cookie = `user_c=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    document.cookie = `sessionname=${'out'}; SameSite=none; Secure; expires=${new Date(
+                        new Date().getTime() + 0 * 0 * 0 * 0
+                    ).toGMTString()}; path=/`
+
+                    localStorage.removeItem('sessionid')
+                    //end of clear cookies..
+
+                    window.open('../Signup/Login', '_self')
+                }
+            }, 1000)
+
+            function check_if() {
+                function getCookie(name) {
+                    const value = `; ${document.cookie}`
+                    const parts = value.split(`; ${name}=`)
+                    if (parts.length === 2)
+                        return parts.pop().split(';').shift()
+                }
+
+                $.ajax({
+                    method: 'POST',
+                    url: 'https://chatapp.labalu.repl.co/checkexist',
+                    data: {
+                        ide: getCookie('user_c'),
+                    },
+                    success: (data) => {
+                        if (data !== 'success') {
+                            //Clear cookies...
+                            document.cookie = `user_c=${'out'}; SameSite=none; Secure; expires=${new Date(
+                                new Date().getTime() + 0 * 0 * 0 * 0
+                            ).toGMTString()}; path=/`
+
+                            document.cookie = `sessionname=${'out'}; SameSite=none; Secure; expires=${new Date(
+                                new Date().getTime() + 0 * 0 * 0 * 0
+                            ).toGMTString()}; path=/`
+
+                            //end of clear cookies..
+
+                            window.open('../Signup/Login', '_self')
+                        }
+                    },
+                })
+            }
+            check_if()
+        </script>
+    </body>
+</html>

@@ -1,0 +1,3 @@
+dbname = RclDXou8Bw
+host = remotemysql.com
+pass = kzSRzGNAOT

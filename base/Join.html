@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+        />
+        <meta property="og:url" content="/" />
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content="Free Chatting" />
+        <meta
+            property="og:description"
+            content="Has it taken a while since you last communicated with friends? then hopin and chat with friends for free."
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+        />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <title>Join Free Chatting</title>
+    </head>
+    <body class="bg-dark text-white">
+        <div
+            style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                flex-direction: column;
+                width: 100%;
+            "
+            class="p-4"
+        >
+            <form
+                style="max-width: 500px; gap: 10px"
+                class="d-flex flex-column align-items-center w-100"
+                action=""
+            >
+                <div class="h2 text-warning">Join / Login</div>
+                <input
+                    autofocus
+                    autocomplete="username"
+                    class="form-control mt-2"
+                    type="text"
+                    name=""
+                    placeholder="Enter your name."
+                    id="namev"
+                />
+                <input
+                    class="form-control"
+                    autocomplete="new-password"
+                    type="password"
+                    id="loginform"
+                    placeholder="Enter new / old password."
+                />
+                <input type="hidden" name="security" id="sc" />
+                <button
+                    class="form-control bg-primary btn text-white"
+                    type="submit"
+                    id="myb"
+                >
+                    Submit
+                </button>
+            </form>
+            <script>
+                function getCookie(name) {
+                    const value = `; ${document.cookie}`
+                    const parts = value.split(`; ${name}=`)
+                    if (parts.length === 2)
+                        return parts.pop().split(';').shift()
+                }
+                if (
+                    getCookie('user_c') &&
+                    getCookie('sessionname') &&
+                    localStorage.getItem('sessionid')
+                ) {
+                    if (
+                        getCookie('user_c') !== null &&
+                        getCookie('sessionname') !== null &&
+                        localStorage.getItem('sessionid') !== null
+                    ) {
+                        window.open('../', '_self')
+                    }
+                } else {
+                    let form = document.querySelector('form')
+                    let namev = document.querySelector('#namev')
+                    let loginform = document.querySelector('#loginform')
+                    let passwordregix =
+                        /^(?=.*[0-9])(?=.*[!@?$%^&*])[a-zA-Z0-9!@?$%^&*]{6,16}$/
+
+                    //Sending cores api...
+                    let sc = document.getElementById('sc')
+                    let myb = document.getElementById('myb')
+
+                    function myvv() {
+                        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(
+                            /[018]/g,
+                            (c) =>
+                                (
+                                    c ^
+                                    (crypto.getRandomValues(
+                                        new Uint8Array(1)
+                                    )[0] &
+                                        (15 >> (c / 4)))
+                                ).toString(16)
+                        )
+                    }
+
+                    $.ajax({
+                        method: 'POST',
+                        url: 'http://192.168.1.19:3000/csrf_api',
+                        data: {
+                            token: myvv(),
+                        },
+                        success: function (d) {
+                            sc.value = d.name
+                        },
+                    })
+
+                    //end of cors api
+
+                    form.onsubmit = function (ev) {
+                        ev.preventDefault()
+                        if (namev.value === '') {
+                            window.alert('Enter your name.')
+                            namev.focus()
+                        } else if (namev.length < 3) {
+                            window.alert('Please Enter your real name.')
+                            namev.focus()
+                        } else if (!loginform.value.match(passwordregix)) {
+                            alert('No secured password.')
+                            loginform.focus()
+                        } else if (loginform.length < 8) {
+                            alert('This password is not secured')
+                            loginform.focus()
+                        } else {
+                            function uuidv4() {
+                                return (
+                                    [1e7] +
+                                    -1e3 +
+                                    -4e3 +
+                                    -8e3 +
+                                    -1e11
+                                ).replace(/[018]/g, (c) =>
+                                    (
+                                        c ^
+                                        (crypto.getRandomValues(
+                                            new Uint8Array(1)
+                                        )[0] &
+                                            (15 >> (c / 4)))
+                                    ).toString(16)
+                                )
+                            }
+
+                            myb.disabled = true
+                            myb.innerHTML = 'please wait...'
+
+                            $.ajax({
+                                method: 'POST',
+                                url: 'http://192.168.1.19:3000/signup/login/post',
+                                data: {
+                                    names: namev.value,
+                                    uid: uuidv4(),
+                                    pass: loginform.value,
+                                    ctoken: sc.value,
+                                },
+                                success: function (data) {
+                                    if (data.success !== 'success') {
+                                        if (data === 'success') {
+                                            alert(
+                                                'your account has been created. now re-enter your credientials to login.'
+                                            )
+                                            namev.value = ''
+                                            loginform.value = ''
+                                            namev.focus()
+                                            myb.disabled = false
+                                            myb.innerHTML = 'Submit'
+                                        } else {
+                                            alert(data)
+                                            namev.value = ''
+                                            loginform.value = ''
+                                            namev.focus()
+                                            myb.disabled = false
+                                            myb.innerHTML = 'Submit'
+                                        }
+                                    } else if (data === 'success') {
+                                        alert(
+                                            'your account has been created. now re-enter your credientials to login.'
+                                        )
+                                        namev.value = ''
+                                        loginform.value = ''
+                                        namev.focus()
+                                        myb.disabled = false
+                                        myb.innerHTML = 'Submit'
+                                    } else {
+                                        document.cookie = `user_c=${
+                                            data.user_c
+                                        }; SameSite=none; Secure; expires=${new Date(
+                                            new Date().getTime() +
+                                                60 * 60 * 10000 * 128
+                                        ).toGMTString()}; path=/`
+
+                                        document.cookie = `sessionname=${
+                                            data.names
+                                        }; SameSite=none; Secure; expires=${new Date(
+                                            new Date().getTime() +
+                                                60 * 60 * 10000 * 128
+                                        ).toGMTString()}; path=/`
+
+                                        localStorage.setItem(
+                                            'sessionid',
+                                            data.user_c
+                                        )
+
+                                        setTimeout(() => {
+                                            window.open('../', '_self')
+                                        }, 1000)
+                                    }
+                                },
+                            })
+                        }
+                    }
+                    //Remove cookie...
+                }
+            </script>
+        </div>
+    </body>
+</html>
